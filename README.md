@@ -17,10 +17,15 @@ A modern, responsive, retro-style Snake Game built with pure HTML, CSS, and vani
 ---
 
 *📱 Fully Cross-Platform & Responsive: Scales smoothly on mobile portrait screens and desktop displays without layout distortion.
+
 *🎮 Mobile-Optimized Touch Controls: On-screen D-Pad equipped with touch-action locks to prevent browser scrolling, zooming, or pull-to-refresh while playing.
+
 *🎨 3 Cyberpunk Neon Themes: Switch dynamically between Neon Green, Neon Blue, and Neon Red visual palettes.
+
 *⚡ 3 Difficulty Levels: Choose between Easy, Medium, and Hard speed modes.
+
 *🔒 Input Buffer Guard: Built-in logic prevents quick double-tap 180° self-collision bugs.
+
 *🏆 Persistent Local Storage: High score, active color theme, and selected difficulty automatically save across page reloads.
 
 ---
@@ -30,7 +35,9 @@ A modern, responsive, retro-style Snake Game built with pure HTML, CSS, and vani
 ---
 
 Platform           Control Scheme
+
 Desktop / Laptop   Arrow Keys (▲ ▼ ◄ ►) or W, A, S, D
+
 Mobile / Tablet    On-screen Touch D-Pad
 
 ---
@@ -40,7 +47,11 @@ Mobile / Tablet    On-screen Touch D-Pad
 ---
 
 *HTML5 (Canvas API for rendering)
+
 *CSS3 (Flexbox, Grid, CSS Variables, and custom glow filters)
+
 *JavaScript (Vanilla ES6 logic, LocalStorage API)
 
 ---
+
+Made with 💚 with the help of AI.
