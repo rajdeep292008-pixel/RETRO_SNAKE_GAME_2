@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Cyberpunk Neon Snake</title>
+    <style>
+        :root {
+            /* Theme variables (Default: Neon Green) */
+            --neon-primary: #00ff66;
+            --neon-primary-glow: rgba(0, 255, 102, 0.5);
+            --neon-secondary: #ff007f;
+            --neon-secondary-glow: rgba(255, 0, 127, 0.5);
+            --bg-color: #08060d;
+            --panel-bg: #120b1a;
+        }
+
+        /* Color Theme Presets */
+        body.theme-green {
+            --neon-primary: #00ff66;
+            --neon-primary-glow: rgba(0, 255, 102, 0.5);
+            --neon-secondary: #ff007f;
+            --neon-secondary-glow: rgba(255, 0, 127, 0.5);
+        }
+
+        body.theme-blue {
+            --neon-primary: #00e5ff;
+            --neon-primary-glow: rgba(0, 229, 255, 0.5);
+            --neon-secondary: #ff007f;
+            --neon-secondary-glow: rgba(255, 0, 127, 0.5);
+        }
+
+        body.theme-red {
+            --neon-primary: #ff0033;
+            --neon-primary-glow: rgba(255, 0, 51, 0.5);
+            --neon-secondary: #00e5ff;
+            --neon-secondary-glow: rgba(0, 229, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--neon-primary);
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            touch-action: none;
+            transition: color 0.3s ease;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 100vw;
+            max-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Settings Bar (Theme & Difficulty Selectors) */
+        .settings-bar {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        select {
+            background: var(--panel-bg);
+            color: var(--neon-primary);
+            border: 1px solid var(--neon-primary);
+            padding: 4px 6px;
+            font-family: inherit;
+            font-size: 11px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 0 5px var(--neon-primary-glow);
+        }
+
+        /* Score & Controls Header */
+        .header {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 10px 16px;
+            border: 2px solid var(--neon-secondary);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--neon-secondary-glow);
+        }
+
+        .score-board {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .score-primary {
+            color: var(--neon-primary);
+            text-shadow: 0 0 5px var(--neon-primary-glow);
+        }
+
+        .score-secondary {
+            color: var(--neon-secondary);
+            text-shadow: 0 0 5px var(--neon-secondary-glow);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            background: transparent;
+            color: var(--neon-primary);
+            border: 1px solid var(--neon-primary);
+            padding: 6px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            box-shadow: 0 0 5px var(--neon-primary-glow);
+            transition: all 0.2s ease;
+        }
+
+        button#pause-btn {
+            color: var(--neon-secondary);
+            border-color: var(--neon-secondary);
+            box-shadow: 0 0 5px var(--neon-secondary-glow);
+        }
+
+        button:active {
+            background: var(--neon-primary);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--neon-primary);
+        }
+
+        button#pause-btn:active {
+            background: var(--neon-secondary);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--neon-secondary);
+        }
+
+        /* Responsive Canvas Wrapper */
+        .canvas-wrapper {
+            position: relative;
+            border: 3px solid var(--neon-primary);
+            border-radius: 8px;
+            box-shadow: 0 0 20px var(--neon-primary-glow), 0 0 10px var(--neon-secondary-glow);
+            background-color: #040206;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 85vw;
+            max-height: 50vh;
+            aspect-ratio: 1 / 1;
+        }
+
+        /* On-Screen Mobile D-Pad */
+        .dpad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 55px);
+            grid-template-rows: repeat(3, 55px);
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .dpad-btn {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-secondary);
+            color: var(--neon-secondary);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 0 8px var(--neon-secondary-glow);
+            touch-action: manipulation;
+        }
+
+        .dpad-btn:nth-child(even) {
+            border-color: var(--neon-primary);
+            color: var(--neon-primary);
+            box-shadow: 0 0 8px var(--neon-primary-glow);
+        }
+
+        .dpad-btn:active {
+            background: var(--neon-secondary);
+            color: var(--bg-color);
+        }
+
+        #btn-up    { grid-column: 2; grid-row: 1; }
+        #btn-left  { grid-column: 1; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+        #btn-down  { grid-column: 2; grid-row: 3; }
+
+        /* Game Over / Pause Overlay */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 6, 13, 0.88);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            border-radius: 5px;
+        }
+
+        .overlay h2 {
+            font-size: 26px;
+            color: var(--neon-secondary);
+            text-shadow: 0 0 10px var(--neon-secondary), 0 0 20px var(--neon-primary);
+            text-transform: uppercase;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (min-width: 1024px) {
+            .dpad-container {
+                display: none; 
+            }
+        }
+    </style>
+</head>
+<body class="theme-green">
+
+    <div class="game-container">
+        <!-- Settings Bar -->
+        <div class="settings-bar">
+            <div class="setting-group">
+                <label for="theme-select">Theme:</label>
+                <select id="theme-select">
+                    <option value="green">Neon Green</option>
+                    <option value="blue">Neon Blue</option>
+                    <option value="red">Neon Red</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="level-select">Level:</label>
+                <select id="level-select">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="score-board">
+                <div class="score-primary">Score: <span id="score">0</span></div>
+                <div class="score-secondary">High: <span id="high-score">0</span></div>
+            </div>
+            <div class="btn-group">
+                <button id="start-btn">Start</button>
+                <button id="pause-btn">Pause</button>
+            </div>
+        </div>
+
+        <!-- Canvas Frame -->
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            
+            <div id="overlay" class="overlay">
+                <h2 id="overlay-text">Press Start</h2>
+            </div>
+        </div>
+
+        <!-- Mobile Touch Controls -->
+        <div class="dpad-container">
+            <div class="dpad-btn" id="btn-up">▲</div>
+            <div class="dpad-btn" id="btn-left">◄</div>
+            <div class="dpad-btn" id="btn-right">►</div>
+            <div class="dpad-btn" id="btn-down">▼</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI & Settings Elements
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('high-score');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const overlay = document.getElementById('overlay');
+        const overlayText = document.getElementById('overlay-text');
+        const themeSelect = document.getElementById('theme-select');
+        const levelSelect = document.getElementById('level-select');
+
+        // Grid Settings
+        const GRID_SIZE = 20; 
+        const CELL_SIZE = canvas.width / GRID_SIZE;
+
+        // Difficulty Speed Presets (in milliseconds)
+        const SPEED_MAP = {
+            easy: 140,
+            medium: 100,
+            hard: 60
+        };
+
+        // Theme Palette Hex Maps for Canvas Rendering
+        const THEME_COLORS = {
+            green: { primary: '#00ff66', secondary: '#ff007f' },
+            blue:  { primary: '#00e5ff', secondary: '#ff007f' },
+            red:   { primary: '#ff0033', secondary: '#00e5ff' }
+        };
+
+        // Game State Variables
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let dx = 1;
+        let dy = 0;
+        let score = 0;
+        let highScore = localStorage.getItem('snake_neon_highscore') || 0;
+        let gameInterval = null;
+        let isPaused = false;
+        let isRunning = false;
+        let canChangeDirection = true;
+
+        // Load Saved Preferences
+        let currentTheme = localStorage.getItem('snake_neon_theme') || 'green';
+        let currentLevel = localStorage.getItem('snake_neon_level') || 'medium';
+
+        themeSelect.value = currentTheme;
+        levelSelect.value = currentLevel;
+        document.body.className = `theme-${currentTheme}`;
+        highScoreEl.textContent = highScore;
+
+        // Theme Switcher Event
+        themeSelect.addEventListener('change', (e) => {
+            currentTheme = e.target.value;
+            document.body.className = `theme-${currentTheme}`;
+            localStorage.setItem('snake_neon_theme', currentTheme);
+            draw(); // Re-render canvas immediately
+        });
+
+        // Level Switcher Event
+        levelSelect.addEventListener('change', (e) => {
+            currentLevel = e.target.value;
+            localStorage.setItem('snake_neon_level', currentLevel);
+            if (isRunning && !isPaused) {
+                // Instantly update game tick speed if currently playing
+                clearInterval(gameInterval);
+                gameInterval = setInterval(gameLoop, SPEED_MAP[currentLevel]);
+            }
+        });
+
+        function initGame() {
+            snake = [
+                { x: 10, y: 10 },
+                { x: 9, y: 10 },
+                { x: 8, y: 10 }
+            ];
+            dx = 1;
+            dy = 0;
+            score = 0;
+            scoreEl.textContent = score;
+            canChangeDirection = true;
+            spawnFood();
+        }
+
+        function spawnFood() {
+            while (true) {
+                food.x = Math.floor(Math.random() * GRID_SIZE);
+                food.y = Math.floor(Math.random() * GRID_SIZE);
+                let collision = snake.some(segment => segment.x === food.x && segment.y === food.y);
+                if (!collision) break;
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+        }
+
+        function update() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // Wall Collision Check
+            if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
+                gameOver();
+                return;
+            }
+
+            // Self Collision Check
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Food Check
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreEl.textContent = score;
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreEl.textContent = highScore;
+                    localStorage.setItem('snake_neon_highscore', highScore);
+                }
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            canChangeDirection = true;
+        }
+
+        function draw() {
+            const palette = THEME_COLORS[currentTheme];
+
+            // Background
+            ctx.fillStyle = '#040206';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Subtle Grid Lines
+            ctx.strokeStyle = '#180e22';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= canvas.width; i += CELL_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
+                ctx.moveTo(0, i); ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // Draw Neon Secondary Color Food with Glow
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = palette.secondary;
+            ctx.fillStyle = palette.secondary;
+            ctx.beginPath();
+            ctx.arc(
+                food.x * CELL_SIZE + CELL_SIZE / 2,
+                food.y * CELL_SIZE + CELL_SIZE / 2,
+                CELL_SIZE / 2.5, 0, Math.PI * 2
+            );
+            ctx.fill();
+
+            // Draw Alternating Primary & Secondary Snake Segments
+            snake.forEach((segment, index) => {
+                let segmentColor;
+                
+                if (index === 0) {
+                    // Head glows in Secondary Color
+                    segmentColor = palette.secondary;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = palette.secondary;
+                } else {
+                    // Body alternates between Secondary & Primary
+                    segmentColor = index % 2 === 0 ? palette.secondary : palette.primary;
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = segmentColor;
+                }
+
+                ctx.fillStyle = segmentColor;
+                ctx.fillRect(
+                    segment.x * CELL_SIZE + 1,
+                    segment.y * CELL_SIZE + 1,
+                    CELL_SIZE - 2,
+                    CELL_SIZE - 2
+                );
+            });
+
+            // Reset Shadow Blur for rendering speed
+            ctx.shadowBlur = 0;
+        }
+
+        function setDirection(newDx, newDy) {
+            if (!canChangeDirection || !isRunning || isPaused) return;
+            if (newDx === -dx && newDx !== 0) return;
+            if (newDy === -dy && newDy !== 0) return;
+
+            dx = newDx;
+            dy = newDy;
+            canChangeDirection = false;
+        }
+
+        // Keyboard Event Listeners
+        window.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp': case 'w': case 'W': setDirection(0, -1); break;
+                case 'ArrowDown': case 's': case 'S': setDirection(0, 1); break;
+                case 'ArrowLeft': case 'a': case 'A': setDirection(-1, 0); break;
+                case 'ArrowRight': case 'd': case 'D': setDirection(1, 0); break;
+            }
+        });
+
+        // Touch Control Binding
+        const bindTouch = (id, newDx, newDy) => {
+            const btn = document.getElementById(id);
+            const handleTouch = (e) => {
+                e.preventDefault();
+                setDirection(newDx, newDy);
+            };
+            btn.addEventListener('touchstart', handleTouch, { passive: false });
+            btn.addEventListener('mousedown', handleTouch);
+        };
+
+        bindTouch('btn-up', 0, -1);
+        bindTouch('btn-down', 0, 1);
+        bindTouch('btn-left', -1, 0);
+        bindTouch('btn-right', 1, 0);
+
+        function startGame() {
+            if (isRunning) return;
+            initGame();
+            isRunning = true;
+            isPaused = false;
+            overlay.classList.add('hidden');
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, SPEED_MAP[currentLevel]);
+        }
+
+        function togglePause() {
+            if (!isRunning) return;
+            if (isPaused) {
+                gameInterval = setInterval(gameLoop, SPEED_MAP[currentLevel]);
+                isPaused = false;
+                overlay.classList.add('hidden');
+                pauseBtn.textContent = 'Pause';
+            } else {
+                clearInterval(gameInterval);
+                isPaused = true;
+                overlayText.textContent = 'PAUSED';
+                overlay.classList.remove('hidden');
+                pauseBtn.textContent = 'Resume';
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            isRunning = false;
+            overlayText.textContent = 'GAME OVER';
+            overlay.classList.remove('hidden');
+            startBtn.textContent = 'Restart';
+        }
+
+        startBtn.addEventListener('click', () => {
+            startBtn.textContent = 'Restart';
+            startGame();
+        });
+
+        pauseBtn.addEventListener('click', togglePause);
+
+        draw();
+    </script>
+</body>
+</html>
